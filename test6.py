@@ -5,10 +5,8 @@ from openai import OpenAI
 from dotenv import load_dotenv
 from google_play_scraper import search, reviews, Sort
 
-# 환경 변수 로드
 load_dotenv()
 
-# Azure OpenAI 정보
 AZURE_OPENAI_KEY = st.secrets["AZURE_OPENAI_KEY"]
 AZURE_OPENAI_ENDPOINT = st.secrets["AZURE_OPENAI_ENDPOINT"]
 AZURE_OPENAI_DEPLOYMENT = st.secrets["AZURE_OPENAI_DEPLOYMENT"]
@@ -20,7 +18,7 @@ client = OpenAI(
     default_query={"api-version": "2025-01-01-preview"}
 )
 
-# Streamlit UI 설정
+# Streamlit 설정
 st.set_page_config(page_title="앱 리뷰 분석기", layout="centered")
 st.title("📱 구글 플레이 앱 리뷰 분석기")
 st.write("앱 이름을 입력하면 사용자 리뷰를 분석해 보고서를 생성합니다.")
@@ -39,7 +37,7 @@ if "app_name" not in st.session_state:
 if "no_count" not in st.session_state:
     st.session_state.no_count = 0  # "아니요" 클릭 횟수 카운팅
 
-# 앱 이름 입력 (값 변경이 있을 때만 세션 상태 초기화)
+# 앱 이름 입력
 app_name = st.text_input("리뷰를 보고 싶은 앱 이름을 입력하세요", key="app_name", value=st.session_state.app_name)
 
 # 앱 이름이 변경되면 세션 상태 초기화
@@ -49,7 +47,7 @@ if app_name != st.session_state.app_name:
     st.session_state.search_results = []
     st.session_state.confirmed = False
     st.session_state.disable_buttons = False
-    st.session_state.no_count = 0  # "아니요" 클릭 횟수 초기화
+    st.session_state.no_count = 0 
 
 # 앱 검색
 if st.session_state.app_name and not st.session_state.search_results:
@@ -58,14 +56,14 @@ if st.session_state.app_name and not st.session_state.search_results:
 
 # 앱 후보 확인
 if st.session_state.search_results and not st.session_state.confirmed:
-    if st.session_state.no_count >= 5:
+    if st.session_state.no_count >= 4:
         # 5번 연속 "아니요" 클릭 시
-        st.write("❌ 5번 연속으로 '아니요'를 클릭하셨습니다. 앱을 찾을 수 없습니다.")
+        st.write("❌ 앱을 찾을 수 없습니다. 앱 이름을 다시 확인해주세요.")
         st.session_state.disable_buttons = True
-        st.session_state.search_results = []  # 앱 목록 초기화
-        st.session_state.no_count = 0  # "아니요" 클릭 횟수 초기화
-        st.session_state.search_index = 0  # 앱 후보 인덱스 초기화
-        st.stop()  # 더 이상 진행하지 않음
+        st.session_state.search_results = [] 
+        st.session_state.no_count = 0  
+        st.session_state.search_index = 0  
+        st.stop()
 
     else:
         app_info = st.session_state.search_results[st.session_state.search_index]
@@ -81,18 +79,17 @@ if st.session_state.search_results and not st.session_state.confirmed:
             if st.button("✅ 이 앱이 맞아요", key="confirm_btn", disabled=disable_buttons):
                 st.session_state.confirmed = True
                 st.session_state.disable_buttons = True
-                st.session_state.no_count = 0  # "아니요" 클릭 횟수 초기화
-                st.rerun()  # 상태 변경 후 페이지를 다시 로드
+                st.session_state.no_count = 0 
+                st.rerun()  
 
         with col2:
             if st.button("❌ 아니요, 다음 앱 보기", key="next_btn", disabled=disable_buttons):
-                # 상태 업데이트 후 버튼 클릭 반영
                 st.session_state.search_index += 1
                 st.session_state.disable_buttons = False
-                st.session_state.no_count += 1  # "아니요" 클릭 횟수 증가
-                st.rerun()  # 상태 업데이트 후 페이지 새로고침
+                st.session_state.no_count += 1  
+                st.rerun()  
 
-# 리뷰 수집 및 분석 (확정된 앱에 대해서만)
+# 리뷰 수집 및 분석
 if st.session_state.confirmed:
     app_info = st.session_state.search_results[st.session_state.search_index]
     package_name = app_info["appId"]
@@ -114,7 +111,7 @@ if st.session_state.confirmed:
 
     st.info(f"💬 총 {len(reviews_list)}개의 리뷰를 수집했습니다.")
 
-    # GPT 프롬프트 구성
+    # GPT 프롬프트
     prompt = f"""
 아래는 '{app_info['title']}' 앱에 대한 실제 사용자 리뷰입니다:
 
@@ -124,6 +121,9 @@ if st.session_state.confirmed:
 1. 주요 불만사항
 2. 긍정적 피드백
 3. 개선 제안
+
+[주의사항]
+1. 보고서 작성 후 추가 문의는 받지 않습니다. 추가 정보 제공과 관련된 답변은 제외해주세요.
 """
 
     # GPT 호출
