@@ -64,7 +64,7 @@ if st.session_state.search_results and not st.session_state.confirmed:
         with col2:
             if st.button("❌ 아니요, 다음 앱 보기", key="no_button"):
                 st.session_state.search_index += 1
-                st.experimental_rerun()
+                st.rerun()
 
 
 # 리뷰 수집 및 분석
@@ -115,6 +115,7 @@ if st.session_state.confirmed:
     # 결과 출력
     st.subheader("📝 분석 보고서")
     st.write(report)
+
 
 
 
