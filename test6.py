@@ -67,13 +67,13 @@ if st.session_state.search_results and not st.session_state.confirmed:
         with col1:
             if st.button("✅ 이 앱이 맞아요", disabled=disable_buttons):
                 st.session_state.confirmed = True
-                st.session_state.disable_buttons = True
+                st.session_state.disable_buttons = True  # "이 앱이 맞아요" 클릭 시 비활성화 처리
                 st.rerun()
         with col2:
             if st.button("❌ 아니요, 다음 앱 보기", disabled=disable_buttons):
                 st.session_state.search_index += 1
+                # ❌ 버튼 비활성화 하지 않음 — 계속 다음 앱 후보 선택 가능
                 st.rerun()
-
 
 # 리뷰 수집 및 분석
 if st.session_state.confirmed:
@@ -120,18 +120,18 @@ if st.session_state.confirmed:
         )
         report = response.choices[0].message.content
 
-    # 버튼 비활성화 처리
+    # 버튼 비활성화 처리 (안전하게 다시 한번)
     st.session_state.disable_buttons = True
 
     # 결과 출력
     st.markdown("## 📝 분석 보고서")
 
-    # 타이틀 강조
+    # 타이틀 강조 함수
     def emphasize_sections(text):
         replacements = {
-            "주요 불만사항": "### 🔴 **주요 불만사항**",
-            "긍정적 피드백": "### 🟢 **긍정적 피드백**",
-            "개선 제안": "### 🛠️ **개선 제안**"
+            "주요 불만사항": "🔴 **주요 불만사항**",
+            "긍정적 피드백": "🟢 **긍정적 피드백**",
+            "개선 제안": "🛠️ **개선 제안**"
         }
         for k, v in replacements.items():
             text = text.replace(k, v)
@@ -144,11 +144,12 @@ if st.session_state.confirmed:
     st.markdown("---")
     st.markdown("#### 다른 앱 리뷰도 필요하신가요?")
     if st.button("🔄 다른 앱 리뷰 보기"):
-        # 모든 상태 초기화
-        st.session_state.search_index = 0
-        st.session_state.search_results = []
-        st.session_state.confirmed = False
-        st.session_state.disable_buttons = False
-        st.session_state.app_name = ""  # 앱 이름 초기화
-        st.rerun()
-
+        # 진짜 페이지 새로고침 (F5처럼 완전 초기화)
+        st.markdown(
+            """
+            <script>
+                window.location.reload();
+            </script>
+            """,
+            unsafe_allow_html=True
+        )
