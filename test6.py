@@ -62,7 +62,8 @@ if st.session_state.search_results and not st.session_state.confirmed:
         st.error("❌ 5개의 앱을 확인했지만 원하는 앱을 찾을 수 없습니다. 이름을 다시 확인해주세요.")
         st.session_state.search_results = []
         st.session_state.no_count = 0  # "아니요" 클릭 횟수 초기화
-        st.rerun()  # 페이지 새로 고침
+        st.session_state.app_name = ""  # 앱 이름 초기화
+        st.rerun()  # 상태 초기화 후 페이지 새로고침
 
     else:
         app_info = st.session_state.search_results[st.session_state.search_index]
@@ -92,6 +93,7 @@ if st.session_state.search_results and not st.session_state.confirmed:
                     st.warning("❌ 5번 연속으로 '아니요'를 클릭하셨습니다. 다시 앱 이름을 입력해주세요.")
                     st.session_state.search_results = []  # 앱 목록 초기화
                     st.session_state.no_count = 0  # "아니요" 클릭 횟수 초기화
+                    st.session_state.app_name = ""  # 앱 이름 초기화
                     st.rerun()  # 상태 초기화 후 프로세스 종료
                 else:
                     st.rerun()  # 상태 변경 후 호출
@@ -128,9 +130,6 @@ if st.session_state.confirmed:
 1. 주요 불만사항
 2. 긍정적 피드백
 3. 개선 제안
-
-[주의사항]
-1. 보고서 작성 이후 추가적인 문의를 받지 않습니다. 상세 보고 및 상세 분석 등을 제공할 수 있다는 답변은 제외해주세요.
 """
 
     # GPT 호출
