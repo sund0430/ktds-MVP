@@ -61,6 +61,7 @@ if st.session_state.search_results and not st.session_state.confirmed:
     if st.session_state.no_count >= 5:
         # 5번 연속 "아니요" 클릭 시
         st.write("❌ 5번 연속으로 '아니요'를 클릭하셨습니다. 앱을 찾을 수 없습니다.")
+        st.session_state.disable_buttons = True
         st.session_state.search_results = []  # 앱 목록 초기화
         st.session_state.no_count = 0  # "아니요" 클릭 횟수 초기화
         st.session_state.search_index = 0  # 앱 후보 인덱스 초기화
@@ -91,15 +92,7 @@ if st.session_state.search_results and not st.session_state.confirmed:
                 st.session_state.search_index += 1
                 st.session_state.disable_buttons = False
                 st.session_state.no_count += 1  # "아니요" 클릭 횟수 증가
-
-                if st.session_state.no_count >= 5:
-                    st.warning("❌ 5번 연속으로 '아니요'를 클릭하셨습니다. 다시 앱 이름을 입력해주세요.")
-                    st.session_state.search_results = []  # 앱 목록 초기화
-                    st.session_state.no_count = 0  # "아니요" 클릭 횟수 초기화
-                    st.session_state.search_index = 0  # 앱 후보 인덱스 초기화
-                    st.stop()  # 더 이상 진행하지 않음
-                else:
-                    st.rerun()  # 상태 업데이트 후 페이지 새로고침
+                st.rerun()  # 상태 업데이트 후 페이지 새로고침
 
 # 리뷰 수집 및 분석 (확정된 앱에 대해서만)
 if st.session_state.confirmed:
