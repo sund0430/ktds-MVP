@@ -8,10 +8,8 @@ from openai import OpenAI
 from dotenv import load_dotenv
 from google_play_scraper import search, reviews, Sort
 
-# 환경 변수 로드
 load_dotenv()
 
-# Azure OpenAI 정보
 AZURE_OPENAI_KEY = st.secrets["AZURE_OPENAI_KEY"]
 AZURE_OPENAI_ENDPOINT = st.secrets["AZURE_OPENAI_ENDPOINT"]
 AZURE_OPENAI_DEPLOYMENT = st.secrets["AZURE_OPENAI_DEPLOYMENT"]
@@ -28,7 +26,7 @@ st.set_page_config(page_title="앱 리뷰 분석기", layout="centered")
 st.title("📱 구글 플레이 앱 리뷰 분석기")
 st.write("앱 이름을 입력하면 사용자 리뷰를 분석해 보고서를 생성합니다.")
 
-# 앱 이름 입력
+# 앱 이름 입력받기
 app_name = st.text_input("리뷰를 보고 싶은 앱 이름을 입력하세요", "")
 
 # 사용자 응답값 상태 초기화
@@ -38,6 +36,8 @@ if "search_results" not in st.session_state:
     st.session_state.search_results = []
 if "confirmed" not in st.session_state:
     st.session_state.confirmed = False
+if "disable_buttons" not in st.session_state:
+    st.session_state.disable_buttons = False
 
 # 앱 검색
 if app_name and not st.session_state.search_results:
@@ -45,27 +45,35 @@ if app_name and not st.session_state.search_results:
         st.session_state.search_results = search(app_name, lang="ko", country="kr")
         st.session_state.search_index = 0
 
-# 앱 후보 선택 흐름
+# 검색된 앱 확인요청
 if st.session_state.search_results and not st.session_state.confirmed:
     if st.session_state.search_index >= 5:
-        st.error("❌ 5개의 앱을 확인했지만 원하는 앱을 찾을 수 없습니다. 이름을 다시 확인해주세요.")
+        st.error("❌ 원하시는 앱을 찾을 수 없습니다. 이름을 다시 확인해주세요.")
         st.session_state.search_results = []
     else:
         app_info = st.session_state.search_results[st.session_state.search_index]
         st.write(f"🔍 앱 후보 {st.session_state.search_index + 1}: **{app_info['title']}**")
         st.image(app_info["icon"], width=100)
-        st.write(f"설명: {app_info.get('summary', "")}")
+        st.write(f"설명: {app_info.get('summary', '')}")
         st.write(f"패키지명: `{app_info['appId']}`")
+
+        disable_buttons = st.session_state.disable_buttons
 
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("✅ 이 앱이 맞아요", key="yes_button"):
-                st.session_state.confirmed = True
+            st.button(
+                "✅ 이 앱이 맞아요",
+                key="yes_button",
+                disabled=disable_buttons,
+                on_click=lambda: setattr(st.session_state, 'confirmed', True)
+            )
         with col2:
-            if st.button("❌ 아니요, 다음 앱 보기", key="no_button"):
-                st.session_state.search_index += 1
-                st.rerun()
-
+            st.button(
+                "❌ 아니요, 다음 앱 보기",
+                key="no_button",
+                disabled=disable_buttons,
+                on_click=lambda: setattr(st.session_state, 'search_index', st.session_state.search_index + 1) or st.rerun()
+            )
 
 # 리뷰 수집 및 분석
 if st.session_state.confirmed:
@@ -89,7 +97,7 @@ if st.session_state.confirmed:
 
     st.info(f"💬 총 {len(reviews_list)}개의 리뷰를 수집했습니다.")
 
-    # GPT 프롬프트 구성
+    # GPT 프롬프트
     prompt = f"""
 아래는 '{app_info['title']}' 앱에 대한 실제 사용자 리뷰입니다:
 
@@ -112,11 +120,31 @@ if st.session_state.confirmed:
         )
         report = response.choices[0].message.content
 
+    # 버튼 비활성화 처리
+    st.session_state.disable_buttons = True
+
     # 결과 출력
-    st.subheader("📝 분석 보고서")
-    st.write(report)
+    st.markdown("## 📝 분석 보고서")
 
+    def emphasize_sections(text):
+        replacements = {
+            "주요 불만사항": "### 🔴 **주요 불만사항**",
+            "긍정적 피드백": "### 🟢 **긍정적 피드백**",
+            "개선 제안": "### 🛠️ **개선 제안**"
+        }
+        for k, v in replacements.items():
+            text = text.replace(k, v)
+        return text
 
+    styled_report = emphasize_sections(report)
+    st.markdown(styled_report)
 
-
-
+    # 하단 새로고침 버튼
+    st.markdown("---")
+    st.markdown("#### 다른 앱 리뷰도 필요하신가요?")
+    if st.button("🔄 다른 앱 리뷰 보기"):
+        st.session_state.search_index = 0
+        st.session_state.search_results = []
+        st.session_state.confirmed = False
+        st.session_state.disable_buttons = False
+        st.rerun()
