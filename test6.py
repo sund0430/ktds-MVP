@@ -54,7 +54,7 @@ if st.session_state.search_results and not st.session_state.confirmed:
         app_info = st.session_state.search_results[st.session_state.search_index]
         st.write(f"🔍 앱 후보 {st.session_state.search_index + 1}: **{app_info['title']}**")
         st.image(app_info["icon"], width=100)
-        st.write(f"설명: {app_info['summary']}")
+        st.write(f"설명: {app_info.get('summary', "")}")
         st.write(f"패키지명: `{app_info['appId']}`")
 
         col1, col2 = st.columns(2)
@@ -110,3 +110,4 @@ if st.session_state.confirmed:
     # 결과 출력
     st.subheader("📝 분석 보고서")
     st.write(report)
+
