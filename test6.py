@@ -153,4 +153,3 @@ if st.session_state.confirmed:
             """,
             unsafe_allow_html=True
         )
-
