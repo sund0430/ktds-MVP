@@ -67,13 +67,13 @@ if st.session_state.search_results and not st.session_state.confirmed:
         with col1:
             if st.button("✅ 이 앱이 맞아요", disabled=disable_buttons):
                 st.session_state.confirmed = True
-                st.session_state.disable_buttons = True  # 버튼 즉시 비활성화
+                st.session_state.disable_buttons = True
                 st.rerun()
         with col2:
             if st.button("❌ 아니요, 다음 앱 보기", disabled=disable_buttons):
                 st.session_state.search_index += 1
-                st.session_state.disable_buttons = True  # 버튼 즉시 비활성화
                 st.rerun()
+
 
 # 리뷰 수집 및 분석
 if st.session_state.confirmed:
@@ -151,3 +151,4 @@ if st.session_state.confirmed:
         st.session_state.disable_buttons = False
         st.session_state.app_name = ""  # 앱 이름 초기화
         st.rerun()
+
