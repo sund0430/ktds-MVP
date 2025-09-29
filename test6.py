@@ -1,6 +1,3 @@
-# 실제 구글 플레이스토어에서 리뷰를 수집하여 취합 및 개선안 제안
-# Streamlit 배포
-
 import os
 import time
 import streamlit as st
@@ -23,12 +20,11 @@ client = OpenAI(
     default_query={"api-version": "2025-01-01-preview"}
 )
 
-# Streamlit UI
 st.set_page_config(page_title="앱 리뷰 분석기", layout="centered")
 st.title("📱 구글 플레이 앱 리뷰 분석기")
 st.write("앱 이름을 입력하면 사용자 리뷰를 분석해 보고서를 생성합니다.")
 
-# 사용자 응답값 상태 초기화
+# 세션 상태 초기값 설정
 if "search_index" not in st.session_state:
     st.session_state.search_index = 0
 if "search_results" not in st.session_state:
@@ -40,8 +36,16 @@ if "disable_buttons" not in st.session_state:
 if "app_name" not in st.session_state:
     st.session_state.app_name = ""
 
-# 앱 이름 입력 필드 (value 동기화 포함)
-st.text_input("리뷰를 보고 싶은 앱 이름을 입력하세요", key="app_name", value=st.session_state.get("app_name", ""))
+# 앱 이름 입력
+app_name = st.text_input("리뷰를 보고 싶은 앱 이름을 입력하세요", key="app_name", value=st.session_state.app_name)
+
+# 앱 이름이 변경됐을 경우 이전 상태 초기화
+if app_name != st.session_state.app_name:
+    st.session_state.app_name = app_name
+    st.session_state.search_index = 0
+    st.session_state.search_results = []
+    st.session_state.confirmed = False
+    st.session_state.disable_buttons = False
 
 # 앱 검색
 if st.session_state.app_name and not st.session_state.search_results:
@@ -67,13 +71,12 @@ if st.session_state.search_results and not st.session_state.confirmed:
         with col1:
             if st.button("✅ 이 앱이 맞아요", disabled=disable_buttons):
                 st.session_state.confirmed = True
-                st.session_state.disable_buttons = True  # "이 앱이 맞아요" 클릭 시 비활성화 처리
-                st.rerun()
+                st.session_state.disable_buttons = True
+                st.experimental_rerun()
         with col2:
             if st.button("❌ 아니요, 다음 앱 보기", disabled=disable_buttons):
                 st.session_state.search_index += 1
-                # ❌ 버튼 비활성화 하지 않음 — 계속 다음 앱 후보 선택 가능
-                st.rerun()
+                st.experimental_rerun()
 
 # 리뷰 수집 및 분석
 if st.session_state.confirmed:
@@ -81,7 +84,6 @@ if st.session_state.confirmed:
     package_name = app_info["appId"]
     st.success(f"✅ 선택된 앱: {app_info['title']} (패키지명: {package_name})")
 
-    # 리뷰 수집
     with st.spinner("리뷰 수집 중..."):
         result, _ = reviews(
             package_name,
@@ -97,7 +99,6 @@ if st.session_state.confirmed:
 
     st.info(f"💬 총 {len(reviews_list)}개의 리뷰를 수집했습니다.")
 
-    # GPT 프롬프트 구성
     prompt = f"""
 아래는 '{app_info['title']}' 앱에 대한 실제 사용자 리뷰입니다:
 
@@ -112,7 +113,6 @@ if st.session_state.confirmed:
 1. 보고서 작성 후 추가적인 문의는 받지 않습니다. 필요 시 더 상세한 내용을 제공할 수 있다는 등의 문구는 제외해주세요.
 """
 
-    # GPT 호출
     with st.spinner("AI 분석 중..."):
         response = client.chat.completions.create(
             model=AZURE_OPENAI_DEPLOYMENT,
@@ -120,13 +120,10 @@ if st.session_state.confirmed:
         )
         report = response.choices[0].message.content
 
-    # 버튼 비활성화 처리 (안전하게 다시 한번)
     st.session_state.disable_buttons = True
 
-    # 결과 출력
     st.markdown("## 📝 분석 보고서")
 
-    # 타이틀 강조 함수
     def emphasize_sections(text):
         replacements = {
             "주요 불만사항": "### 🔴 **주요 불만사항**",
@@ -140,16 +137,10 @@ if st.session_state.confirmed:
     styled_report = emphasize_sections(report)
     st.markdown(styled_report)
 
-    # 하단 안내 및 새로고침 버튼
+    # 새로고침 버튼 - 세션 상태 초기화 후 rerun
     st.markdown("---")
     st.markdown("#### 다른 앱 리뷰도 필요하신가요?")
     if st.button("🔄 다른 앱 리뷰 보기"):
-        # 진짜 페이지 새로고침 (F5처럼 완전 초기화)
-        st.markdown(
-            """
-            <script>
-                window.location.reload();
-            </script>
-            """,
-            unsafe_allow_html=True
-        )
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        st.experimental_rerun()
