@@ -12,9 +12,9 @@ from google_play_scraper import search, reviews, Sort
 load_dotenv()
 
 # Azure OpenAI 정보
-AZURE_OPENAI_KEY = os.getenv("AZURE_OPENAI_KEY")
-AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
-AZURE_OPENAI_DEPLOYMENT = os.getenv("AZURE_OPENAI_DEPLOYMENT")
+AZURE_OPENAI_KEY = st.secrets["AZURE_OPENAI_KEY"]
+AZURE_OPENAI_ENDPOINT = st.secrets["AZURE_OPENAI_ENDPOINT"]
+AZURE_OPENAI_DEPLOYMENT = st.secrets["AZURE_OPENAI_DEPLOYMENT"]
 
 # OpenAI 클라이언트 생성
 client = OpenAI(
@@ -82,4 +82,5 @@ if app_name:
         # 결과 출력
         st.subheader("📝 분석 보고서")
         st.write(report)
+
 
