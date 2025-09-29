@@ -61,6 +61,9 @@ if st.session_state.search_results and not st.session_state.confirmed:
     if st.session_state.search_index >= 5:
         st.error("❌ 5개의 앱을 확인했지만 원하는 앱을 찾을 수 없습니다. 이름을 다시 확인해주세요.")
         st.session_state.search_results = []
+        st.session_state.no_count = 0  # "아니요" 클릭 횟수 초기화
+        st.experimental_rerun()  # 페이지 새로 고침
+
     else:
         app_info = st.session_state.search_results[st.session_state.search_index]
         st.write(f"🔍 앱 후보 {st.session_state.search_index + 1}: **{app_info['title']}**")
@@ -69,14 +72,14 @@ if st.session_state.search_results and not st.session_state.confirmed:
         st.write(f"패키지명: `{app_info['appId']}`")
 
         disable_buttons = st.session_state.disable_buttons
-        
+
         col1, col2 = st.columns(2)
         with col1:
             if st.button("✅ 이 앱이 맞아요", key="confirm_btn", disabled=disable_buttons):
                 st.session_state.confirmed = True
                 st.session_state.disable_buttons = True
                 st.session_state.no_count = 0  # "아니요" 클릭 횟수 초기화
-                st.experimental_rerun()  # 상태 변경 후 호출
+                st.experimental_rerun()  # 상태 변경 후 페이지를 다시 로드
 
         with col2:
             if st.button("❌ 아니요, 다음 앱 보기", key="next_btn", disabled=disable_buttons):
@@ -90,8 +93,8 @@ if st.session_state.search_results and not st.session_state.confirmed:
                     st.session_state.search_results = []  # 앱 목록 초기화
                     st.session_state.no_count = 0  # "아니요" 클릭 횟수 초기화
                     st.experimental_rerun()  # 상태 초기화 후 프로세스 종료
-
-                st.experimental_rerun()  # 상태 변경 후 호출
+                else:
+                    st.experimental_rerun()  # 상태 변경 후 호출
 
 # 리뷰 수집 및 분석 (확정된 앱에 대해서만)
 if st.session_state.confirmed:
