@@ -62,17 +62,17 @@ if st.session_state.search_results and not st.session_state.confirmed:
         st.write(f"패키지명: `{app_info['appId']}`")
 
         disable_buttons = st.session_state.disable_buttons
-
+        
         col1, col2 = st.columns(2)
         with col1:
             if st.button("✅ 이 앱이 맞아요", key="confirm_btn", disabled=disable_buttons):
                 st.session_state.confirmed = True
-                st.session_state.disable_buttons = True  # 버튼 비활성화: 더 이상 선택 불가
-                st.experimental_rerun()  # 반드시 이벤트 내에서 호출
+                st.session_state.disable_buttons = True
+                st.experimental_rerun()
+        
         with col2:
             if st.button("❌ 아니요, 다음 앱 보기", key="next_btn", disabled=disable_buttons):
                 st.session_state.search_index += 1
-                # 다음 앱 보기 버튼을 눌렀을 땐 비활성화 해제 유지
                 st.session_state.disable_buttons = False
                 st.experimental_rerun()
 
@@ -147,3 +147,4 @@ if st.session_state.confirmed:
             if key in st.session_state:
                 del st.session_state[key]
         st.experimental_rerun()
+
