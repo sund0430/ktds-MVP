@@ -33,6 +33,7 @@ if "disable_buttons" not in st.session_state:
 if "app_name" not in st.session_state:
     st.session_state.app_name = ""
 
+# 텍스트 입력과 세션 상태 동기화
 app_name = st.text_input("리뷰를 보고 싶은 앱 이름을 입력하세요", key="app_name", value=st.session_state.app_name)
 
 if app_name != st.session_state.app_name:
@@ -42,11 +43,13 @@ if app_name != st.session_state.app_name:
     st.session_state.confirmed = False
     st.session_state.disable_buttons = False
 
+# 앱 검색
 if st.session_state.app_name and not st.session_state.search_results:
     with st.spinner("앱 정보를 불러오는 중..."):
         st.session_state.search_results = search(st.session_state.app_name, lang="ko", country="kr")
         st.session_state.search_index = 0
 
+# 앱 후보 선택
 if st.session_state.search_results and not st.session_state.confirmed:
     if st.session_state.search_index >= 5:
         st.error("❌ 5개의 앱을 확인했지만 원하는 앱을 찾을 수 없습니다. 이름을 다시 확인해주세요.")
@@ -62,20 +65,24 @@ if st.session_state.search_results and not st.session_state.confirmed:
 
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("✅ 이 앱이 맞아요", disabled=disable_buttons):
+            if st.button("✅ 이 앱이 맞아요", key="confirm_btn", disabled=disable_buttons):
                 st.session_state.confirmed = True
-                st.session_state.disable_buttons = True
-                st.experimental_rerun()  # 여기서만 호출
+                st.session_state.disable_buttons = True  # 버튼 비활성화: 더 이상 선택 불가
+                st.experimental_rerun()  # 반드시 이벤트 내에서 호출
         with col2:
-            if st.button("❌ 아니요, 다음 앱 보기", disabled=disable_buttons):
+            if st.button("❌ 아니요, 다음 앱 보기", key="next_btn", disabled=disable_buttons):
                 st.session_state.search_index += 1
-                st.experimental_rerun()  # 여기서만 호출
+                # 다음 앱 보기 버튼을 눌렀을 땐 비활성화 해제 유지
+                st.session_state.disable_buttons = False
+                st.experimental_rerun()
 
+# 리뷰 수집 및 분석 (확정된 앱에 대해서만)
 if st.session_state.confirmed:
     app_info = st.session_state.search_results[st.session_state.search_index]
     package_name = app_info["appId"]
     st.success(f"✅ 선택된 앱: {app_info['title']} (패키지명: {package_name})")
 
+    # 리뷰 수집
     with st.spinner("리뷰 수집 중..."):
         result, _ = reviews(
             package_name,
@@ -91,6 +98,7 @@ if st.session_state.confirmed:
 
     st.info(f"💬 총 {len(reviews_list)}개의 리뷰를 수집했습니다.")
 
+    # GPT 프롬프트 구성
     prompt = f"""
 아래는 '{app_info['title']}' 앱에 대한 실제 사용자 리뷰입니다:
 
@@ -105,6 +113,7 @@ if st.session_state.confirmed:
 1. 보고서 작성 후 추가적인 문의는 받지 않습니다. 필요 시 더 상세한 내용을 제공할 수 있다는 등의 문구는 제외해주세요.
 """
 
+    # GPT 호출
     with st.spinner("AI 분석 중..."):
         response = client.chat.completions.create(
             model=AZURE_OPENAI_DEPLOYMENT,
@@ -112,10 +121,10 @@ if st.session_state.confirmed:
         )
         report = response.choices[0].message.content
 
-    st.session_state.disable_buttons = True
-
+    # 결과 출력
     st.markdown("## 📝 분석 보고서")
 
+    # 타이틀 강조 함수
     def emphasize_sections(text):
         replacements = {
             "주요 불만사항": "### 🔴 **주요 불만사항**",
@@ -129,9 +138,12 @@ if st.session_state.confirmed:
     styled_report = emphasize_sections(report)
     st.markdown(styled_report)
 
+    # 하단 안내 및 새로고침 버튼
     st.markdown("---")
     st.markdown("#### 다른 앱 리뷰도 필요하신가요?")
-    if st.button("🔄 다른 앱 리뷰 보기"):
-        for key in list(st.session_state.keys()):
-            del st.session_state[key]
-        st.experimental_rerun()  # 이곳도 버튼 클릭 안에서만 호출
+    if st.button("🔄 다른 앱 리뷰 보기", key="refresh"):
+        # 상태 완전 초기화하여 전체 프로세스 리셋
+        for key in ["search_index", "search_results", "confirmed", "disable_buttons", "app_name"]:
+            if key in st.session_state:
+                del st.session_state[key]
+        st.experimental_rerun()
