@@ -63,6 +63,7 @@ if st.session_state.search_results and not st.session_state.confirmed:
         st.session_state.search_results = []
         st.session_state.no_count = 0  # "아니요" 클릭 횟수 초기화
         st.session_state.app_name = ""  # 앱 이름 초기화
+        st.session_state.search_index = 0  # 앱 후보 인덱스 초기화
         st.rerun()  # 상태 초기화 후 페이지 새로고침
 
     else:
@@ -94,9 +95,8 @@ if st.session_state.search_results and not st.session_state.confirmed:
                     st.session_state.search_results = []  # 앱 목록 초기화
                     st.session_state.no_count = 0  # "아니요" 클릭 횟수 초기화
                     st.session_state.app_name = ""  # 앱 이름 초기화
-                    st.rerun()  # 상태 초기화 후 프로세스 종료
-                else:
-                    st.experimental_rerun()  # 앱 후보를 새로고침 없이 연속적으로 보여주기
+                    st.session_state.search_index = 0  # 앱 후보 인덱스 초기화
+                    st.rerun()  # 상태 초기화 후 페이지 새로고침
 
 # 리뷰 수집 및 분석 (확정된 앱에 대해서만)
 if st.session_state.confirmed:
