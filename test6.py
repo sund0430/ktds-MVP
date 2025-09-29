@@ -91,9 +91,7 @@ if st.session_state.search_results and not st.session_state.confirmed:
                 st.session_state.search_index += 1
                 st.session_state.disable_buttons = False
                 st.session_state.no_count += 1  # "아니요" 클릭 횟수 증가
-
-                else:
-                    st.rerun()  # 상태 업데이트 후 페이지 새로고침
+                st.rerun()  # 상태 업데이트 후 페이지 새로고침
 
 # 리뷰 수집 및 분석 (확정된 앱에 대해서만)
 if st.session_state.confirmed:
