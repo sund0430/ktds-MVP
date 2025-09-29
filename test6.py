@@ -65,8 +65,6 @@ if st.session_state.search_results and not st.session_state.confirmed:
         st.session_state.search_results = []  # 앱 목록 초기화
         st.session_state.no_count = 0  # "아니요" 클릭 횟수 초기화
         st.session_state.search_index = 0  # 앱 후보 인덱스 초기화
-        st.session_state.app_name = ""  # 앱 이름 초기화
-        st.session_state.confirmed = False  # 앱 확정 여부 초기화
         st.stop()  # 더 이상 진행하지 않음
 
     else:
