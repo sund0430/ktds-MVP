@@ -39,13 +39,14 @@ if "search_results" not in st.session_state:
 if "confirmed" not in st.session_state:
     st.session_state.confirmed = False
 
+# 앱 검색
 if app_name and not st.session_state.search_results:
     with st.spinner("앱 정보를 불러오는 중..."):
         st.session_state.search_results = search(app_name, lang="ko", country="kr")
         st.session_state.search_index = 0
 
+# 앱 후보 선택 흐름
 if st.session_state.search_results and not st.session_state.confirmed:
-    # 최대 5개까지만 확인
     if st.session_state.search_index >= 5:
         st.error("❌ 5개의 앱을 확인했지만 원하는 앱을 찾을 수 없습니다. 이름을 다시 확인해주세요.")
         st.session_state.search_results = []
@@ -60,35 +61,34 @@ if st.session_state.search_results and not st.session_state.confirmed:
         with col1:
             if st.button("✅ 이 앱이 맞아요"):
                 st.session_state.confirmed = True
-                package_name = app_info["appId"]
         with col2:
             if st.button("❌ 아니요, 다음 앱 보기"):
                 st.session_state.search_index += 1
 
-# 앱이 확정된 경우 리뷰 수집 및 분석 진행
+# 리뷰 수집 및 분석
 if st.session_state.confirmed:
     app_info = st.session_state.search_results[st.session_state.search_index]
     package_name = app_info["appId"]
     st.success(f"✅ 선택된 앱: {app_info['title']} (패키지명: {package_name})")
 
-        # 리뷰 수집
-        with st.spinner("리뷰 수집 중..."):
-            result, _ = reviews(
-                package_name,
-                lang="ko",
-                country="kr",
-                sort=Sort.NEWEST,
-                count=100
-            )
-            time.sleep(2)
+    # 리뷰 수집
+    with st.spinner("리뷰 수집 중..."):
+        result, _ = reviews(
+            package_name,
+            lang="ko",
+            country="kr",
+            sort=Sort.NEWEST,
+            count=100
+        )
+        time.sleep(2)
 
-        reviews_list = [r["content"] for r in result if r["content"]]
-        reviews_text = "\n".join(reviews_list)
+    reviews_list = [r["content"] for r in result if r["content"]]
+    reviews_text = "\n".join(reviews_list)
 
-        st.info(f"💬 총 {len(reviews_list)}개의 리뷰를 수집했습니다.")
+    st.info(f"💬 총 {len(reviews_list)}개의 리뷰를 수집했습니다.")
 
-        # GPT 프롬프트 구성
-        prompt = f"""
+    # GPT 프롬프트 구성
+    prompt = f"""
 아래는 '{app_info['title']}' 앱에 대한 실제 사용자 리뷰입니다:
 
 {reviews_text}
@@ -99,15 +99,14 @@ if st.session_state.confirmed:
 3. 개선 제안
 """
 
-        # GPT 호출
-        with st.spinner("AI 분석 중..."):
-            response = client.chat.completions.create(
-                model=AZURE_OPENAI_DEPLOYMENT,
-                messages=[{"role": "user", "content": prompt}]
-            )
-            report = response.choices[0].message.content
+    # GPT 호출
+    with st.spinner("AI 분석 중..."):
+        response = client.chat.completions.create(
+            model=AZURE_OPENAI_DEPLOYMENT,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        report = response.choices[0].message.content
 
-        # 결과 출력
-        st.subheader("📝 분석 보고서")
-        st.write(report)
-
+    # 결과 출력
+    st.subheader("📝 분석 보고서")
+    st.write(report)
