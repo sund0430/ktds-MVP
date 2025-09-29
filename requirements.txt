@@ -1,0 +1,6 @@
+#필요한 라이브러리 목록
+
+streamlit
+python-dotenv
+google-play-scraper
+openai
