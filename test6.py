@@ -26,8 +26,8 @@ st.set_page_config(page_title="앱 리뷰 분석기", layout="centered")
 st.title("📱 구글 플레이 앱 리뷰 분석기")
 st.write("앱 이름을 입력하면 사용자 리뷰를 분석해 보고서를 생성합니다.")
 
-# 앱 이름 입력받기
-app_name = st.text_input("리뷰를 보고 싶은 앱 이름을 입력하세요", "")
+# 앱 이름 입력
+st.text_input("리뷰를 보고 싶은 앱 이름을 입력하세요", key="app_name")
 
 # 사용자 응답값 상태 초기화
 if "search_index" not in st.session_state:
@@ -40,9 +40,9 @@ if "disable_buttons" not in st.session_state:
     st.session_state.disable_buttons = False
 
 # 앱 검색
-if app_name and not st.session_state.search_results:
+if st.session_state.app_name and not st.session_state.search_results:
     with st.spinner("앱 정보를 불러오는 중..."):
-        st.session_state.search_results = search(app_name, lang="ko", country="kr")
+        st.session_state.search_results = search(st.session_state.app_name, lang="ko", country="kr")
         st.session_state.search_index = 0
 
 # 검색된 앱 확인요청
@@ -139,7 +139,7 @@ if st.session_state.confirmed:
     styled_report = emphasize_sections(report)
     st.markdown(styled_report)
 
-    # 하단 새로고침 버튼
+    # 하단 안내 및 새로고침 버튼
     st.markdown("---")
     st.markdown("#### 다른 앱 리뷰도 필요하신가요?")
     if st.button("🔄 다른 앱 리뷰 보기"):
@@ -147,4 +147,6 @@ if st.session_state.confirmed:
         st.session_state.search_results = []
         st.session_state.confirmed = False
         st.session_state.disable_buttons = False
+        st.session_state.app_name = ""  # ✅ 앱 이름 초기화
         st.rerun()
+
