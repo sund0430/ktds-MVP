@@ -95,6 +95,7 @@ if st.session_state.search_results and not st.session_state.confirmed:
                 # 5번 연속 "아니요" 클릭 시 앱 이름을 다시 입력하게 안내
                 if st.session_state.no_count >= 5:
                     st.warning("❌ 5번 연속으로 '아니요'를 클릭하셨습니다. 다시 앱 이름을 입력해주세요.")
+                    st.session_state.disable_buttons = True
                     st.session_state.search_results = []  # 앱 목록 초기화
                     st.session_state.no_count = 0  # "아니요" 클릭 횟수 초기화
                     st.session_state.search_index = 0  # 앱 후보 인덱스 초기화
