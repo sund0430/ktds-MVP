@@ -65,7 +65,7 @@ if st.session_state.search_results and not st.session_state.confirmed:
         st.session_state.search_index = 0  # 앱 후보 인덱스 초기화
         st.session_state.app_name = ""  # 앱 이름 초기화
         st.session_state.confirmed = False  # 앱 확정 여부 초기화
-        st.experimental_rerun()  # 상태 초기화 후 페이지 새로고침
+        st.rerun()  # 상태 초기화 후 페이지 새로고침
 
     else:
         app_info = st.session_state.search_results[st.session_state.search_index]
@@ -82,7 +82,7 @@ if st.session_state.search_results and not st.session_state.confirmed:
                 st.session_state.confirmed = True
                 st.session_state.disable_buttons = True
                 st.session_state.no_count = 0  # "아니요" 클릭 횟수 초기화
-                st.experimental_rerun()  # 상태 변경 후 페이지를 다시 로드
+                st.rerun()  # 상태 변경 후 페이지를 다시 로드
 
         with col2:
             if st.button("❌ 아니요, 다음 앱 보기", key="next_btn", disabled=disable_buttons):
@@ -97,11 +97,11 @@ if st.session_state.search_results and not st.session_state.confirmed:
                     st.session_state.search_results = []  # 앱 목록 초기화
                     st.session_state.no_count = 0  # "아니요" 클릭 횟수 초기화
                     st.session_state.search_index = 0  # 앱 후보 인덱스 초기화
-                    st.experimental_rerun()  # 상태 초기화 후 페이지 새로고침
+                    st.rerun()  # 상태 초기화 후 페이지 새로고침
 
                 else:
                     # 상태 업데이트 후 페이지 새로고침
-                    st.experimental_rerun()
+                    st.rerun()
 
 # 리뷰 수집 및 분석 (확정된 앱에 대해서만)
 if st.session_state.confirmed:
