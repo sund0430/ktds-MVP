@@ -28,9 +28,6 @@ st.set_page_config(page_title="앱 리뷰 분석기", layout="centered")
 st.title("📱 구글 플레이 앱 리뷰 분석기")
 st.write("앱 이름을 입력하면 사용자 리뷰를 분석해 보고서를 생성합니다.")
 
-# 앱 이름 입력 (세션 키 지정)
-st.text_input("리뷰를 보고 싶은 앱 이름을 입력하세요", key="app_name")
-
 # 사용자 응답값 상태 초기화
 if "search_index" not in st.session_state:
     st.session_state.search_index = 0
@@ -40,6 +37,11 @@ if "confirmed" not in st.session_state:
     st.session_state.confirmed = False
 if "disable_buttons" not in st.session_state:
     st.session_state.disable_buttons = False
+if "app_name" not in st.session_state:
+    st.session_state.app_name = ""
+
+# 앱 이름 입력 필드 (value 동기화 포함)
+st.text_input("리뷰를 보고 싶은 앱 이름을 입력하세요", key="app_name", value=st.session_state.get("app_name", ""))
 
 # 앱 검색
 if st.session_state.app_name and not st.session_state.search_results:
@@ -65,9 +67,12 @@ if st.session_state.search_results and not st.session_state.confirmed:
         with col1:
             if st.button("✅ 이 앱이 맞아요", disabled=disable_buttons):
                 st.session_state.confirmed = True
+                st.session_state.disable_buttons = True  # 버튼 즉시 비활성화
+                st.rerun()
         with col2:
             if st.button("❌ 아니요, 다음 앱 보기", disabled=disable_buttons):
                 st.session_state.search_index += 1
+                st.session_state.disable_buttons = True  # 버튼 즉시 비활성화
                 st.rerun()
 
 # 리뷰 수집 및 분석
@@ -144,5 +149,5 @@ if st.session_state.confirmed:
         st.session_state.search_results = []
         st.session_state.confirmed = False
         st.session_state.disable_buttons = False
-        st.session_state.app_name = ""  # 앱 이름도 초기화
-        st.rerun()  # 🔁 정상 작동 위치
+        st.session_state.app_name = ""  # 앱 이름 초기화
+        st.rerun()
