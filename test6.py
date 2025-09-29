@@ -56,7 +56,7 @@ if st.session_state.app_name and not st.session_state.search_results:
 
 # 앱 후보 확인
 if st.session_state.search_results and not st.session_state.confirmed:
-    if st.session_state.no_count >= 4:
+    if st.session_state.no_count >= 5:
         # 5번 연속 "아니요" 클릭 시
         st.write("❌ 앱을 찾을 수 없습니다. 앱 이름을 다시 확인해주세요.")
         st.session_state.disable_buttons = True
