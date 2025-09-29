@@ -68,13 +68,16 @@ if st.session_state.search_results and not st.session_state.confirmed:
             if st.button("✅ 이 앱이 맞아요", key="confirm_btn", disabled=disable_buttons):
                 st.session_state.confirmed = True
                 st.session_state.disable_buttons = True
-                st.experimental_rerun()
-        
+                # 버튼 클릭 후 상태 변경을 먼저 하고, rerun을 호출
+                st.session_state.search_index = 0  # 초기화하여 처음부터 다시 시작하게 설정
+                st.experimental_rerun()  # 상태 변경 후 호출
+
         with col2:
             if st.button("❌ 아니요, 다음 앱 보기", key="next_btn", disabled=disable_buttons):
                 st.session_state.search_index += 1
                 st.session_state.disable_buttons = False
-                st.experimental_rerun()
+                # 버튼 클릭 후 상태 변경을 먼저 하고, rerun을 호출
+                st.experimental_rerun()  # 상태 변경 후 호출
 
 # 리뷰 수집 및 분석 (확정된 앱에 대해서만)
 if st.session_state.confirmed:
@@ -147,4 +150,3 @@ if st.session_state.confirmed:
             if key in st.session_state:
                 del st.session_state[key]
         st.experimental_rerun()
-
