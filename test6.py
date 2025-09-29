@@ -74,3 +74,64 @@ if st.session_state.search_results and not st.session_state.confirmed:
 if st.session_state.confirmed:
     app_info = st.session_state.search_results[st.session_state.search_index]
     package_name = app_info["appId"]
+    st.success(f"✅ 선택된 앱: {app_info['title']} (패키지명: {package_name})")
+
+    with st.spinner("리뷰 수집 중..."):
+        result, _ = reviews(
+            package_name,
+            lang="ko",
+            country="kr",
+            sort=Sort.NEWEST,
+            count=100
+        )
+        time.sleep(2)
+
+    reviews_list = [r["content"] for r in result if r["content"]]
+    reviews_text = "\n".join(reviews_list)
+
+    st.info(f"💬 총 {len(reviews_list)}개의 리뷰를 수집했습니다.")
+
+    prompt = f"""
+아래는 '{app_info['title']}' 앱에 대한 실제 사용자 리뷰입니다:
+
+{reviews_text}
+
+이 리뷰들을 분석해서 아래 항목을 포함한 보고서를 작성해주세요:
+1. 주요 불만사항
+2. 긍정적 피드백
+3. 개선 제안
+
+[주의사항]
+1. 보고서 작성 후 추가적인 문의는 받지 않습니다. 필요 시 더 상세한 내용을 제공할 수 있다는 등의 문구는 제외해주세요.
+"""
+
+    with st.spinner("AI 분석 중..."):
+        response = client.chat.completions.create(
+            model=AZURE_OPENAI_DEPLOYMENT,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        report = response.choices[0].message.content
+
+    st.session_state.disable_buttons = True
+
+    st.markdown("## 📝 분석 보고서")
+
+    def emphasize_sections(text):
+        replacements = {
+            "주요 불만사항": "### 🔴 **주요 불만사항**",
+            "긍정적 피드백": "### 🟢 **긍정적 피드백**",
+            "개선 제안": "### 🛠️ **개선 제안**"
+        }
+        for k, v in replacements.items():
+            text = text.replace(k, v)
+        return text
+
+    styled_report = emphasize_sections(report)
+    st.markdown(styled_report)
+
+    st.markdown("---")
+    st.markdown("#### 다른 앱 리뷰도 필요하신가요?")
+    if st.button("🔄 다른 앱 리뷰 보기"):
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        st.experimental_rerun()  # 이곳도 버튼 클릭 안에서만 호출
