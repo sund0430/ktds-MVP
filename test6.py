@@ -141,12 +141,3 @@ if st.session_state.confirmed:
     styled_report = emphasize_sections(report)
     st.markdown(styled_report)
 
-    # 하단 안내 및 새로고침 버튼
-    st.markdown("---")
-    st.markdown("#### 다른 앱 리뷰도 필요하신가요?")
-    if st.button("🔄 다른 앱 리뷰 보기", key="refresh"):
-        # 상태 완전 초기화하여 전체 프로세스 리셋
-        for key in ["search_index", "search_results", "confirmed", "disable_buttons", "app_name"]:
-            if key in st.session_state:
-                del st.session_state[key]
-        st.experimental_rerun()
