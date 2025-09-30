@@ -5,10 +5,8 @@ from dotenv import load_dotenv
 from google_play_scraper import search, reviews, Sort
 
 from langchain.prompts import PromptTemplate
-from langchain.chat_models import AzureChatOpenAI
+from langchain_community.chat_models import AzureChatOpenAI
 from langchain.chains import LLMChain
-
-import streamlit as st #임시용
 
 
 
@@ -143,13 +141,13 @@ if st.session_state.confirmed:
     # Azure OpenAI LLM 설정
     llm = AzureChatOpenAI(
         deployment_name=AZURE_OPENAI_DEPLOYMENT,
-        openai_api_base=AZURE_OPENAI_ENDPOINT,
-        openai_api_version="2025-01-01-preview",
+        azure_endpoint=AZURE_OPENAI_ENDPOINT,
         openai_api_key=AZURE_OPENAI_KEY,
+        openai_api_version="2025-01-01-preview",
         temperature=0.7,
         max_tokens=1000,
-        model_name="gpt-4"  # 또는 배포한 모델명에 맞게 변경하세요
     )
+
 
     chain = LLMChain(llm=llm, prompt=prompt_template)
 
