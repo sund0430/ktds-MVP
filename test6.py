@@ -151,19 +151,21 @@ if st.session_state.confirmed:
 
     st.subheader("📝 분석 보고서")
     
-    # 먼저 report 내용 출력해서 확인
+    # 원본 보고서 출력 (디버깅용)
     st.text("== Raw Report ==")
     st.text(report)
     
     import re
     
     content_dict = {}
-    pattern = re.compile(r'^\s*\d+\.\s+.*')  # 앞뒤 공백 허용한 패턴
+    # 수정된 패턴: Markdown 제목 형식도 인식
+    pattern = re.compile(r'^#+\s*\d+\.\s+.*')
     current_title = None
     
     for line in report.split('\n'):
-        if pattern.match(line.strip()):
-            current_title = line.strip()
+        stripped = line.strip()
+        if pattern.match(stripped):
+            current_title = stripped.replace("###", "").strip()  # '### 1. 제목' → '1. 제목'
             content_dict[current_title] = []
         elif current_title:
             content_dict[current_title].append(line)
@@ -171,9 +173,10 @@ if st.session_state.confirmed:
     # 출력
     if content_dict:
         for title, contents in content_dict.items():
-            st.markdown(f"### {title}")  # 크고 굵게 표시
+            st.markdown(f"### {title}")  # 제목 크고 굵게
             st.write("\n".join(contents).strip())
     else:
         st.warning("보고서를 분석할 수 없습니다. 출력 형식을 다시 확인하세요.")
+
 
 
