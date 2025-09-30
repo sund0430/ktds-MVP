@@ -6,7 +6,6 @@ from openai import OpenAI
 from dotenv import load_dotenv
 from google_play_scraper import search, reviews, Sort
 
-# .env 파일에서 환경 변수 불러오기
 load_dotenv()
 
 AZURE_OPENAI_KEY = os.getenv("AZURE_OPENAI_KEY")
@@ -25,7 +24,7 @@ print("⚠️ 리뷰 확인은 한 번에 하나의 앱만 가능합니다.")
 # 2. 사용자에게 앱 이름 입력받기
 app_name = input("리뷰를 보고 싶은 앱 이름을 입력하세요: ")
 
-# 3. 앱 이름으로 검색해서 패키지명(appId) 찾기
+# 3. 앱 이름으로 검색해서 appId 검색
 search_results = search(app_name, lang="ko", country="kr")
 
 if not search_results:
@@ -84,3 +83,4 @@ else:
     # 8. 결과 출력
     print("\n=== 분석 보고서 ===\n")
     print(response.choices[0].message.content)
+
