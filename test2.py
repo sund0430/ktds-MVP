@@ -5,7 +5,6 @@ from openai import OpenAI
 from dotenv import load_dotenv
 from google_play_scraper import reviews
 
-# .env 파일에서 환경 변수 불러오기
 load_dotenv()
 
 AZURE_OPENAI_KEY = os.getenv("AZURE_OPENAI_KEY")
@@ -19,9 +18,9 @@ client = OpenAI(
     default_query={"api-version": "2024-05-01-preview"}
 )
 
-# 2. 구글 플레이스토어에서 실제 리뷰 수집
+# 2. 구글 플레이스토어에서 리뷰 수집
 result, _ = reviews(
-    "com.kakao.talk",  # 예: 카카오톡 앱 ID
+    "com.kakao.talk",  # 앱 ID
     lang="ko",         # 한국어
     country="kr",      # 한국 스토어
     count=10           # 가져올 리뷰 개수
@@ -32,7 +31,7 @@ reviews_list = [r["content"] for r in result]
 # 3. 리뷰 합치기
 reviews_text = "\n".join(reviews_list)
 
-# 4. 모델에 전달할 프롬프트 작성
+# 4. GPT 프롬프트
 prompt = f"""
 아래는 우리 앱에 대한 실제 사용자 리뷰입니다:
 
@@ -53,3 +52,4 @@ response = client.chat.completions.create(
 # 6. 결과 출력
 print("\n=== 분석 보고서 ===\n")
 print(response.choices[0].message.content)
+
