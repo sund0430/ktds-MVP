@@ -2,7 +2,6 @@
 # Streamlit 배포 (사용성 개선)
 # langchin 적용
 
-import os
 import time
 import streamlit as st
 import re
