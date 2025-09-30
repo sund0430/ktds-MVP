@@ -5,7 +5,7 @@ from openai import AzureOpenAI
 from openai import OpenAI
 from dotenv import load_dotenv
 
-load_dotenv()  # .env 파일에서 환경 변수 로드
+load_dotenv()
 
 AZURE_OPENAI_KEY = os.getenv("AZURE_OPENAI_KEY")
 AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
@@ -17,7 +17,7 @@ client = OpenAI(
     base_url=f"{AZURE_OPENAI_ENDPOINT}openai/deployments/{AZURE_OPENAI_DEPLOYMENT}/",
     default_query={"api-version": "2024-05-01-preview"}) # 최신 API 버전
 
-# 2. 수집된 리뷰 (연습용: 직접 입력)
+# 2. 리뷰 (연습용 직접 입력)
 reviews = [
     "앱이 자꾸 멈춰서 불편합니다.",
     "업데이트 이후 속도가 빨라졌어요. 만족합니다!",
@@ -29,7 +29,7 @@ reviews = [
 # 3. 리뷰 합치기
 reviews_text = "\n".join(reviews)
 
-# 4. 모델에 전달할 프롬프트 작성
+# 4. GPT 프롬프트
 prompt = f"""
 아래는 우리 앱에 대한 사용자 리뷰입니다:
 
@@ -49,3 +49,4 @@ response = client.chat.completions.create(
 
 # 6. 결과 출력
 print(response.choices[0].message.content)
+
