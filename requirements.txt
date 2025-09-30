@@ -4,6 +4,8 @@ python-dotenv
 google-play-scraper
 openai
 langchain
+langchain.chat_models
+langchain_community
 
 
 
