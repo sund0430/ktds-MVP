@@ -49,19 +49,24 @@ with col1:
 with col2:
     search_button = st.button("검색", key="search_btn")
 
-# 검색 버튼이 눌렸을 때 검색 수행
-if search_button and app_name:
-    # 앱 이름이 변경되면 세션 상태 초기화
-    if app_name != st.session_state.app_name:
-        st.session_state.app_name = app_name
-        st.session_state.search_index = 0
-        st.session_state.search_results = []
-        st.session_state.confirmed = False
-        st.session_state.disable_buttons = False
-        st.session_state.no_count = 0 
+# 앱 이름이 변경된 경우 세션 상태 초기화 및 검색 수행
+if app_name != st.session_state.app_name:
+    st.session_state.app_name = app_name
+    st.session_state.search_index = 0
+    st.session_state.search_results = []
+    st.session_state.confirmed = False
+    st.session_state.disable_buttons = False
+    st.session_state.no_count = 0
 
     # 앱 검색
-    if app_name and not st.session_state.search_results:
+    if app_name:
+        with st.spinner("앱 정보를 불러오는 중..."):
+            st.session_state.search_results = search(app_name, lang="ko", country="kr")
+
+# 검색 버튼이 눌렸을 때 추가 동작
+if search_button and app_name:
+    # 검색이 이미 진행된 상태에서 검색 버튼 클릭 시 추가 처리
+    if not st.session_state.search_results:
         with st.spinner("앱 정보를 불러오는 중..."):
             st.session_state.search_results = search(app_name, lang="ko", country="kr")
 
