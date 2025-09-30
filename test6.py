@@ -1,3 +1,6 @@
+# 실제 구글 플레이스토어에서 리뷰를 수집하여 취합 및 개선안 제안
+# Streamlit 배포 및 UI 편의성 향상
+
 import os
 import time
 import streamlit as st
