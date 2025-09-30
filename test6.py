@@ -1,12 +1,13 @@
-# 실제 구글 플레이스토어에서 리뷰를 수집하여 취합 및 개선안 제안
-# Streamlit 배포 및 UI 편의성 향상
-
 import os
 import time
 import streamlit as st
 from openai import OpenAI
 from dotenv import load_dotenv
 from google_play_scraper import search, reviews, Sort
+from langchain.prompts import PromptTemplate
+from langchain.chat_models import ChatOpenAI
+from langchain.chains import LLMChain
+from langchain.agents import initialize_agent, Tool, AgentType
 
 load_dotenv()
 
@@ -128,30 +129,33 @@ if st.session_state.confirmed:
 
     st.info(f"💬 총 {len(reviews_list)}개의 리뷰를 수집했습니다.")
 
-    # GPT 프롬프트
-    prompt = f"""
-아래는 '{app_info['title']}' 앱에 대한 실제 사용자 리뷰입니다:
+    # GPT 프롬프트 템플릿 설정
+    prompt_template = """
+    아래는 '{app_name}' 앱에 대한 실제 사용자 리뷰입니다:
 
-{reviews_text}
+    {reviews_text}
 
-이 리뷰들을 분석해서 아래 항목을 포함한 보고서를 작성해주세요:
-1. 주요 불만사항
-2. 긍정적 피드백
-3. 개선 제안
+    이 리뷰들을 분석해서 아래 항목을 포함한 보고서를 작성해주세요:
+    1. 주요 불만사항
+    2. 긍정적 피드백
+    3. 개선 제안
 
-[주의사항]
-1. 보고서 작성 후 추가 문의는 받지 않습니다. 추가 정보 제공과 관련된 답변은 제외해주세요.
-"""
+    [주의사항]
+    1. 보고서 작성 후 추가 문의는 받지 않습니다. 추가 정보 제공과 관련된 답변은 제외해주세요.
+    """
 
-    # GPT 호출
+    # LangChain을 이용한 분석 프로세스 설정
+    prompt = prompt_template.format(app_name=app_info['title'], reviews_text=reviews_text)
+    
+    # Prompt 템플릿과 LLMChain을 사용하여 분석 요청
+    prompt_template = PromptTemplate(input_variables=["app_name", "reviews_text"], template=prompt_template)
+    llm = ChatOpenAI(api_key=AZURE_OPENAI_KEY)
+    chain = LLMChain(llm=llm, prompt=prompt_template)
+
+    # 분석 실행
     with st.spinner("AI 분석 중..."):
-        response = client.chat.completions.create(
-            model=AZURE_OPENAI_DEPLOYMENT,
-            messages=[{"role": "user", "content": prompt}]
-        )
-        report = response.choices[0].message.content
+        report = chain.run(app_name=app_info['title'], reviews_text=reviews_text)
 
     # 결과 출력
     st.subheader("📝 분석 보고서")
     st.write(report)
-
