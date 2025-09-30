@@ -8,10 +8,8 @@ from openai import OpenAI
 from dotenv import load_dotenv
 from google_play_scraper import search, reviews, Sort
 
-# 환경 변수 로드
 load_dotenv()
 
-# Azure OpenAI 정보
 AZURE_OPENAI_KEY = st.secrets["AZURE_OPENAI_KEY"]
 AZURE_OPENAI_ENDPOINT = st.secrets["AZURE_OPENAI_ENDPOINT"]
 AZURE_OPENAI_DEPLOYMENT = st.secrets["AZURE_OPENAI_DEPLOYMENT"]
@@ -82,5 +80,6 @@ if app_name:
         # 결과 출력
         st.subheader("📝 분석 보고서")
         st.write(report)
+
 
 
