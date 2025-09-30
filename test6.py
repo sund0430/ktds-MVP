@@ -8,6 +8,9 @@ from langchain.prompts import PromptTemplate
 from langchain.chat_models import AzureChatOpenAI
 from langchain.chains import LLMChain
 
+import streamlit as st #임시용
+
+
 load_dotenv()
 
 # Azure OpenAI 관련 시크릿 값 불러오기
@@ -19,6 +22,8 @@ AZURE_OPENAI_DEPLOYMENT = st.secrets["AZURE_OPENAI_DEPLOYMENT"]
 st.set_page_config(page_title="앱 리뷰 분석기", layout="centered")
 st.title("📱 구글 플레이 앱 리뷰 분석기")
 st.write("앱 이름을 입력하면 사용자 리뷰를 분석해 보고서를 생성합니다.")
+st.write("Streamlit version:", st.__version__) #임시용
+
 
 # 세션 상태 초기화
 if "search_index" not in st.session_state:
