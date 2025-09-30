@@ -1,6 +1,11 @@
+# 실제 구글 플레이스토어에서 리뷰를 수집하여 취합 및 개선안 제안
+# Streamlit 배포 (사용성 개선)
+# langchin 적용
+
 import os
 import time
 import streamlit as st
+import re
 from dotenv import load_dotenv
 from google_play_scraper import search, reviews, Sort
 
@@ -10,7 +15,6 @@ from langchain.chains import LLMChain
 
 load_dotenv()
 
-# Azure OpenAI 관련 시크릿 값 불러오기
 AZURE_OPENAI_KEY = st.secrets["AZURE_OPENAI_KEY"]
 AZURE_OPENAI_ENDPOINT = st.secrets["AZURE_OPENAI_ENDPOINT"]
 AZURE_OPENAI_DEPLOYMENT = st.secrets["AZURE_OPENAI_DEPLOYMENT"]
@@ -35,7 +39,7 @@ if "app_name" not in st.session_state:
 if "no_count" not in st.session_state:
     st.session_state.no_count = 0  # "아니요" 클릭 횟수 카운팅
 
-# 앱 이름 입력과 검색 버튼을 나란히 배치
+# 사용자에게 앱 이름 받기
 col1, col2 = st.columns([3, 1])
 
 with col1:
@@ -113,7 +117,7 @@ if st.session_state.confirmed:
     reviews_text = "\n".join(reviews_list)
     st.info(f"💬 총 {len(reviews_list)}개의 리뷰를 수집했습니다.")
 
-    # GPT 프롬프트 템플릿 설정
+    # GPT 프롬프트
     prompt_template_str = """
     아래는 '{app_name}' 앱에 대한 실제 사용자 리뷰입니다:
 
@@ -149,23 +153,16 @@ if st.session_state.confirmed:
     with st.spinner("AI 분석 중..."):
         report = chain.run(app_name=app_info['title'], reviews_text=reviews_text)
 
-    st.subheader("📝 분석 보고서")
-    
-    # 원본 보고서 출력 (디버깅용)
-    st.text("== Raw Report ==")
-    st.text(report)
-    
-    import re
+    st.subheader("📝 분석 보고서")    
     
     content_dict = {}
-    # 수정된 패턴: Markdown 제목 형식도 인식
     pattern = re.compile(r'^#+\s*\d+\.\s+.*')
     current_title = None
     
     for line in report.split('\n'):
         stripped = line.strip()
         if pattern.match(stripped):
-            current_title = stripped.replace("###", "").strip()  # '### 1. 제목' → '1. 제목'
+            current_title = stripped.replace("###", "").strip()
             content_dict[current_title] = []
         elif current_title:
             content_dict[current_title].append(line)
