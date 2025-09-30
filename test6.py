@@ -92,13 +92,13 @@ if st.session_state.search_results and not st.session_state.confirmed:
                 st.session_state.confirmed = True
                 st.session_state.disable_buttons = True
                 st.session_state.no_count = 0
-                st.experimental_rerun()
+                st.rerun()
         with col2:
             if st.button("❌ 아니요, 다음 앱 보기", key="next_btn", disabled=disable_buttons):
                 st.session_state.search_index += 1
                 st.session_state.disable_buttons = False
                 st.session_state.no_count += 1
-                st.experimental_rerun()
+                st.rerun()
 
 # 리뷰 수집 및 분석
 if st.session_state.confirmed:
