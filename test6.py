@@ -40,22 +40,30 @@ if "app_name" not in st.session_state:
 if "no_count" not in st.session_state:
     st.session_state.no_count = 0  # "아니요" 클릭 횟수 카운팅
 
-# 앱 이름 입력
-app_name = st.text_input("리뷰를 보고 싶은 앱 이름을 입력하세요", key="app_name", value=st.session_state.app_name)
+# 앱 이름 입력과 검색 버튼을 나란히 배치
+col1, col2 = st.columns([3, 1])  # 두 개의 열로 배치 (입력란은 넓고 버튼은 좁게)
 
-# 앱 이름이 변경되면 세션 상태 초기화
-if app_name != st.session_state.app_name:
-    st.session_state.app_name = app_name
-    st.session_state.search_index = 0
-    st.session_state.search_results = []
-    st.session_state.confirmed = False
-    st.session_state.disable_buttons = False
-    st.session_state.no_count = 0 
+with col1:
+    app_name = st.text_input("리뷰를 보고 싶은 앱 이름을 입력하세요", key="app_name", value=st.session_state.app_name)
 
-# 앱 검색
-if st.session_state.app_name and not st.session_state.search_results:
-    with st.spinner("앱 정보를 불러오는 중..."):
-        st.session_state.search_results = search(st.session_state.app_name, lang="ko", country="kr")
+with col2:
+    search_button = st.button("검색", key="search_btn")
+
+# 검색 버튼이 눌렸을 때 검색 수행
+if search_button and app_name:
+    # 앱 이름이 변경되면 세션 상태 초기화
+    if app_name != st.session_state.app_name:
+        st.session_state.app_name = app_name
+        st.session_state.search_index = 0
+        st.session_state.search_results = []
+        st.session_state.confirmed = False
+        st.session_state.disable_buttons = False
+        st.session_state.no_count = 0 
+
+    # 앱 검색
+    if app_name and not st.session_state.search_results:
+        with st.spinner("앱 정보를 불러오는 중..."):
+            st.session_state.search_results = search(app_name, lang="ko", country="kr")
 
 # 앱 후보 확인
 if st.session_state.search_results and not st.session_state.confirmed:
