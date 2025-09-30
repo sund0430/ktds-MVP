@@ -150,21 +150,17 @@ if st.session_state.confirmed:
         report = chain.run(app_name=app_info['title'], reviews_text=reviews_text)
 
     st.subheader("📝 분석 보고서")
-    # 보고서 문자열을 각 항목별로 분리
-    sections = report.split('\n')
     
-    # 제목들만 따로 뽑아서 마크다운으로 크고 굵게 표시
-    # report가 '1. 주요 불만사항\n내용\n2. 긍정적 피드백\n내용\n3. 개선 제안\n내용' 형태라고 가정
+    # 먼저 report 내용 출력해서 확인
+    st.text("== Raw Report ==")
+    st.text(report)
     
     import re
     
-    # 항목별 내용 저장용
     content_dict = {}
-    
-    # 항목 제목 패턴
-    pattern = re.compile(r'^\d+\.\s.*')
-    
+    pattern = re.compile(r'^\s*\d+\.\s+.*')  # 앞뒤 공백 허용한 패턴
     current_title = None
+    
     for line in report.split('\n'):
         if pattern.match(line.strip()):
             current_title = line.strip()
@@ -173,7 +169,11 @@ if st.session_state.confirmed:
             content_dict[current_title].append(line)
     
     # 출력
-    for title, contents in content_dict.items():
-        st.markdown(f"### {title}")  # 제목을 크고 굵게
-        st.write("\n".join(contents).strip())
+    if content_dict:
+        for title, contents in content_dict.items():
+            st.markdown(f"### {title}")  # 크고 굵게 표시
+            st.write("\n".join(contents).strip())
+    else:
+        st.warning("보고서를 분석할 수 없습니다. 출력 형식을 다시 확인하세요.")
+
 
