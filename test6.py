@@ -153,7 +153,8 @@ if st.session_state.confirmed:
     with st.spinner("AI 분석 중..."):
         report = chain.run(app_name=app_info['title'], reviews_text=reviews_text)
 
-    st.subheader("📝 분석 보고서")    
+    st.subheader("📝 분석 보고서")
+    st.write(report)
     
     content_dict = {}
     pattern = re.compile(r'^#+\s*\d+\.\s+.*')
