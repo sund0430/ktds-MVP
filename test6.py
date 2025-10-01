@@ -154,7 +154,7 @@ if st.session_state.confirmed:
         report = chain.run(app_name=app_info['title'], reviews_text=reviews_text)
 
     st.subheader("📝 분석 보고서")
-    st.write(report)
+    # st.write(report) #디버깅용
     
     content_dict = {}
     pattern = re.compile(r'^#+\s*\d+\.\s+.*')
